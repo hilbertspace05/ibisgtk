@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <gtk/gtk.h>
 #include <mupdf/fitz.h>
 #include "viewer.h"
@@ -7,7 +8,6 @@ fz_context *ctx;
 fz_document *doc;
 fz_pixmap *pix;
 GtkWidget *darea;
-int current_page = 0;
 double zoom_level = 1.0;
 static gboolean is_fullscreen = FALSE;
 GtkAdjustment *vadjustment;
@@ -83,18 +83,27 @@ void load_page(int page_number) {
 
 
 void on_next_page(GtkWidget *widget, gpointer user_data) {
-    current_page++;
-    save_last_page(current_page);
-    load_page(current_page);
-    gtk_widget_queue_draw(darea); 
+    int num_pages = fz_count_pages(ctx, doc);
+    int last_page = load_last_page();
+    printf("Current page before increment: %d\n", last_page);
+    if (last_page < num_pages - 1) {
+        last_page++;
+        printf("Current page after increment: %d\n", last_page);
+        save_last_page(last_page);
+        load_page(last_page);
+        gtk_widget_queue_draw(darea);
+    }
 }
 
 void on_previous_page(GtkWidget *widget, gpointer user_data) {
-    if (current_page > 0) {
-        current_page--;
-        save_last_page(current_page);
-        load_page(current_page);
-        gtk_widget_queue_draw(darea); 
+    int last_page = load_last_page();
+    printf("Current page before decrement: %d\n", last_page);
+    if (last_page > 0) {
+        last_page--;
+        printf("Current page after decrement: %d\n", last_page);
+        save_last_page(last_page);
+        load_page(last_page);;
+        gtk_widget_queue_draw(darea);
     }
 }
 
@@ -123,17 +132,6 @@ void on_zoom_out(GtkWidget *widget, gpointer user_data) {
     }
 }
 
-//void on_fullscreen_toggle(GtkWidget *widget, gpointer user_data) {
-//    GtkWidget *win = GTK_WIDGET(user_data);
-//    gboolean is_fullscreen = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(win), "is_fullscreen"));
-//    if (!is_fullscreen) {
-//        gtk_window_fullscreen(GTK_WINDOW(win));
-//        g_object_set_data(G_OBJECT(win), "is_fullscreen", GINT_TO_POINTER(TRUE));
-//    } else {
-//        gtk_window_unfullscreen(GTK_WINDOW(win));
-//        g_object_set_data(G_OBJECT(win), "is_fullscreen", GINT_TO_POINTER(FALSE));
-//    }
-//}
 
 
 void on_fullscreen_button_clicked(GtkWidget *widget, gpointer data)

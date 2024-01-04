@@ -8,7 +8,6 @@ extern fz_context *ctx;
 extern fz_document *doc;
 extern fz_pixmap *pix;
 extern GtkWidget *darea;
-extern int current_page;
 extern double zoom_level;
 extern GtkAdjustment *vadjustment;
 extern GtkAdjustment *hadjustment;
