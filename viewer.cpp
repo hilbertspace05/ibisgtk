@@ -1,6 +1,7 @@
 #include <gtk/gtk.h>
 #include <mupdf/fitz.h>
 #include "viewer.h"
+#include "db.h"
 
 fz_context *ctx;
 fz_document *doc;
@@ -83,6 +84,7 @@ void load_page(int page_number) {
 
 void on_next_page(GtkWidget *widget, gpointer user_data) {
     current_page++;
+    save_last_page(current_page);
     load_page(current_page);
     gtk_widget_queue_draw(darea); 
 }
@@ -90,6 +92,7 @@ void on_next_page(GtkWidget *widget, gpointer user_data) {
 void on_previous_page(GtkWidget *widget, gpointer user_data) {
     if (current_page > 0) {
         current_page--;
+        save_last_page(current_page);
         load_page(current_page);
         gtk_widget_queue_draw(darea); 
     }
@@ -100,7 +103,9 @@ void on_zoom_in(GtkWidget *widget, gpointer user_data) {
     if (zoom_level > 10) {
         zoom_level = 10;
     }
-    load_page(current_page);
+    int last_page = load_last_page();
+    load_page(last_page);
+    //load_page(current_page);
     if (GTK_IS_WIDGET(darea)) {
         gtk_widget_queue_draw(darea);
     }
@@ -109,7 +114,9 @@ void on_zoom_in(GtkWidget *widget, gpointer user_data) {
 void on_zoom_out(GtkWidget *widget, gpointer user_data) {
     if (zoom_level > 0.1) {
         zoom_level /= 1.1;
-        load_page(current_page);
+        int last_page = load_last_page();
+        load_page(last_page);
+        //load_page(current_page);
         if (GTK_IS_WIDGET(darea)) {
             gtk_widget_queue_draw(darea);
         }

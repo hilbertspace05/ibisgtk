@@ -2,6 +2,7 @@
 #include <mupdf/fitz.h>
 #include "viewer.h"
 #include "buttons.h"
+#include "db.h"
 
 
 int main(int argc, char *argv[]) {
@@ -10,6 +11,8 @@ int main(int argc, char *argv[]) {
     ctx = fz_new_context(NULL, NULL, FZ_STORE_UNLIMITED);
     fz_register_document_handlers(ctx);
     doc = fz_open_document(ctx, argv[1]);
+
+    init_db();
 
 
     GtkWidget *win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -21,6 +24,19 @@ int main(int argc, char *argv[]) {
 
     g_signal_connect(win, "key-press-event", G_CALLBACK(on_key_press), NULL);
 
+    GtkCssProvider *provider2 = gtk_css_provider_new ();
+
+    gtk_css_provider_load_from_data (provider2,
+                                     "* {"
+                                     "   background-color: #000099;" // Substitua "#FFFFFF" pela cor desejada
+                                     "}", -1, NULL);
+
+    gtk_style_context_add_provider (gtk_widget_get_style_context (win),
+                                    GTK_STYLE_PROVIDER (provider2),
+                                    GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+
+    g_object_unref (provider2);
+    
     GtkCssProvider *provider = gtk_css_provider_new();
     gtk_css_provider_load_from_data(provider,
         "#circular-button {"
@@ -51,6 +67,14 @@ int main(int argc, char *argv[]) {
 
 
     darea = gtk_image_new();
+
+    int last_page = load_last_page();
+    load_page(last_page);
+
+    //int last_page = load_last_page();
+    //if (last_page > 0) {
+    //    load_page(last_page);  // Assuming load_page is a function to display a specific page
+    //}
 
     // Crie um novo GtkScrolledWindow
     GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
@@ -83,9 +107,12 @@ int main(int argc, char *argv[]) {
 
     gtk_container_add(GTK_CONTAINER(win), hbox2);
 
+
     gtk_widget_show_all(win);
     //load_page(0);
     gtk_main();
+
+    close_db();
 
     return 0;
 }
